@@ -6,10 +6,10 @@ def statistics(logs):
     average_response_size = dict()
     count_errors = 0
     for log in logs:
-        status = int(re.findall(' [1-9][0-9]{2} ', log)[0])
+        status = int(re.search(' [1-9][0-9]{2} ', log).group(0))
         if re.fullmatch('[45][0-9]{2}', str(status)):
             count_errors += 1
-        bytes = int(re.findall(' [1-9][0-9]*$', log)[0])
+        bytes = int(re.search(' [1-9][0-9]*$', log).group(0))
         if status in average_response_size.keys():
             average_response_size[status] += [bytes]
         else:
@@ -40,24 +40,25 @@ try:
             time_end_dt = datetime.strptime(time_end[1:-1], '%d/%b/%Y:%H:%M:%S %z')
         except ValueError:
             exit('некорректное время окончания')
-        if min(time_start, time_end, key=lambda x: datetime.strptime(re.findall(log_time_pattern, x)[0][1:-1],
+        if min(time_start, time_end, key=lambda x: datetime.strptime(re.search(log_time_pattern, x).group(0)[1:-1],
                                                                      '%d/%b/%Y:%H:%M:%S %z')) == time_end:
             exit('Время начала должно быть меньше времени окончания')
-        logs.sort(key=lambda x: datetime.strptime(re.findall(log_time_pattern, x)[0][1:-1], '%d/%b/%Y:%H:%M:%S %z'))
-        logs = [log for log in logs if max(time_start, re.findall(log_time_pattern, log)[0],
-                                           key=lambda x: datetime.strptime(re.findall(log_time_pattern, x)[0][1:-1],
-                                                                           '%d/%b/%Y:%H:%M:%S %z')) == min(time_end,
-                                                                                                           re.findall(
-                                                                                                               log_time_pattern,
-                                                                                                               log)[0],
-                                                                                                           key=lambda
-                                                                                                               x: datetime.strptime(
-                                                                                                               re.findall(
-                                                                                                                   log_time_pattern,
-                                                                                                                   x)[
-                                                                                                                   0][
-                                                                                                               1:-1],
-                                                                                                               '%d/%b/%Y:%H:%M:%S %z'))]
+        logs.sort(
+            key=lambda x: datetime.strptime(re.search(log_time_pattern, x).group(0)[1:-1], '%d/%b/%Y:%H:%M:%S %z'))
+        logs = [log for log in logs if max(time_start, re.search(log_time_pattern, log).group(0),
+                                           key=lambda x: datetime.strptime(
+                                               re.search(log_time_pattern, x).group(0)[1:-1],
+                                               '%d/%b/%Y:%H:%M:%S %z')) == min(time_end,
+                                                                               re.search(
+                                                                                   log_time_pattern,
+                                                                                   log).group(0),
+                                                                               key=lambda
+                                                                                   x: datetime.strptime(
+                                                                                   re.search(
+                                                                                       log_time_pattern,
+                                                                                       x).group(0)[
+                                                                                   1:-1],
+                                                                                   '%d/%b/%Y:%H:%M:%S %z'))]
         average_response_size_time, count_errors_time = statistics(logs)
 except FileNotFoundError:
     exit('Файл не найден')
